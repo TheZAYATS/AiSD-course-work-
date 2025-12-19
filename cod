@@ -1,0 +1,149 @@
+#include <iostream>
+#include <ctime>
+#include <cstdlib>
+#include <chrono>
+#include <random>
+
+using namespace std;
+using namespace std::chrono;
+
+// Быстрая сортировка 
+void quickSort(int* arr, int left, int right) {
+    if (left >= right) return;
+
+    int pivot = arr[(left + right) / 2];
+    int i = left;
+    int j = right;
+
+    while (i <= j) {
+        while (arr[i] < pivot) i++;
+        while (arr[j] > pivot) j--;
+
+        if (i <= j) {
+            swap(arr[i], arr[j]);
+            i++;
+            j--;
+        }
+    }
+
+    if (left < j) quickSort(arr, left, j);
+    if (i < right) quickSort(arr, i, right);
+}
+
+void quickSortWrapper(int* arr, int size) {
+    quickSort(arr, 0, size - 1);
+}
+
+// Сортировка слиянием
+void mergeSort(int* arr, int left, int right, int* temp) {
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+
+    mergeSort(arr, left, mid, temp);
+    mergeSort(arr, mid + 1, right, temp);
+
+    // Слияние отсортированных частей
+    int i = left;
+    int j = mid + 1;
+    int k = 0;
+
+    while (i <= mid && j <= right) {
+        if (arr[i] <= arr[j]) {
+            temp[k++] = arr[i++];
+        }
+        else {
+            temp[k++] = arr[j++];
+        }
+    }
+
+    while (i <= mid) temp[k++] = arr[i++];
+    while (j <= right) temp[k++] = arr[j++];
+
+    // Копируем обратно в исходный массив
+    for (i = left, k = 0; i <= right; i++, k++) {
+        arr[i] = temp[k];
+    }
+}
+
+void mergeSortWrapper(int* arr, int size) {
+    int* temp = new int[size];
+    mergeSort(arr, 0, size - 1, temp);
+    delete[] temp;
+}
+
+// Проверка отсортированности массива
+bool isSorted(const int* arr, int size) {
+    for (int i = 1; i < size; i++) {
+        if (arr[i] < arr[i - 1]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Генерация случайного массива
+void generateRandomArray(int* arr, int size, int minVal = -100, int maxVal = 100) {
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> dist(minVal, maxVal);
+
+    for (int i = 0; i < size; i++) {
+        arr[i] = dist(gen);
+    }
+}
+
+// Копирование массива
+void copyArray(const int* source, int* destination, int size) {
+    for (int i = 0; i < size; i++) {
+        destination[i] = source[i];
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+
+    const int SIZE = 1000000;
+
+    // Выделение памяти для массивов
+    int* original = new int[SIZE];
+    int* arr1 = new int[SIZE];
+    int* arr2 = new int[SIZE];
+
+    // Генерация случайных данных
+    cout << "Генерация массива из " << SIZE << " элементов\n";
+    generateRandomArray(original, SIZE, -1000, 1000);
+
+    // Тест быстрой сортировки
+    cout << "\nТест быстрой сортировки\n";
+    copyArray(original, arr1, SIZE);
+
+    auto start = high_resolution_clock::now();
+    quickSortWrapper(arr1, SIZE);
+    auto end = high_resolution_clock::now();
+
+    auto duration = duration_cast<microseconds>(end - start);
+    cout << "Время выполнения: " << duration.count() << " микросекунд ("
+        << duration.count() / 1000.0 << " мс)\n";
+    cout << "Проверка сортировки: " << (isSorted(arr1, SIZE) ? "OK" : "FAILED") << endl;
+
+    // Тест сортировки слиянием
+    cout << "\nТест сортировки слиянием\n";
+    copyArray(original, arr2, SIZE);
+
+    start = high_resolution_clock::now();
+    mergeSortWrapper(arr2, SIZE);
+    end = high_resolution_clock::now();
+
+    duration = duration_cast<microseconds>(end - start);
+    cout << "Время выполнения: " << duration.count() << " микросекунд ("
+        << duration.count() / 1000.0 << " мс)\n";
+    cout << "Проверка сортировки: " << (isSorted(arr2, SIZE) ? "OK" : "FAILED") << endl;
+
+    // Освобождение памяти
+    delete[] original;
+    delete[] arr1;
+    delete[] arr2;
+
+    return 0;
+}
