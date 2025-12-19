@@ -103,42 +103,76 @@ void copyArray(const int* source, int* destination, int size) {
 int main() {
     setlocale(LC_ALL, "Russian");
 
-    const int SIZE = 1000000;
+    const int SIZE = 10000;
+    const int ITERATIONS = 100;
 
     // Выделение памяти для массивов
     int* original = new int[SIZE];
     int* arr1 = new int[SIZE];
     int* arr2 = new int[SIZE];
 
-    // Генерация случайных данных
-    cout << "Генерация массива из " << SIZE << " элементов\n";
-    generateRandomArray(original, SIZE, -1000, 1000);
+    cout << "Тестирование на массиве из " << SIZE << " элементов\n";
+    cout << "Количество итераций: " << ITERATIONS << "\n\n";
 
     // Тест быстрой сортировки
-    cout << "\nТест быстрой сортировки\n";
-    copyArray(original, arr1, SIZE);
+    cout << "Тест быстрой сортировки:\n";
 
-    auto start = high_resolution_clock::now();
-    quickSortWrapper(arr1, SIZE);
-    auto end = high_resolution_clock::now();
+    auto quickStart = high_resolution_clock::now();
 
-    auto duration = duration_cast<microseconds>(end - start);
-    cout << "Время выполнения: " << duration.count() << " микросекунд ("
-        << duration.count() / 1000.0 << " мс)\n";
-    cout << "Проверка сортировки: " << (isSorted(arr1, SIZE) ? "OK" : "FAILED") << endl;
+    bool allSortedQuick = true;
+    for (int iter = 0; iter < ITERATIONS; iter++) {
+        // Генерация новых случайных данных для каждой итерации
+        generateRandomArray(original, SIZE, -1000, 1000);
+        copyArray(original, arr1, SIZE);
+
+        quickSortWrapper(arr1, SIZE);
+
+        // Проверка сортировки для каждой итерации
+        if (!isSorted(arr1, SIZE)) {
+            allSortedQuick = false;
+            cout << "Ошибка сортировки на итерации " << iter + 1 << endl;
+        }
+    }
+
+    auto quickEnd = high_resolution_clock::now();
+
+    auto quickDuration = duration_cast<microseconds>(quickEnd - quickStart);
+    cout << "Общее время выполнения (" << ITERATIONS << " итераций): "
+        << quickDuration.count() << " микросекунд ("
+        << quickDuration.count() / 1000000.0 << " секунд)\n";
+    cout << "Среднее время на итерацию: "
+        << quickDuration.count() / ITERATIONS << " микросекунд\n";
+    cout << "Проверка сортировки: " << (allSortedQuick ? "ВСЕ OK" : "ЕСТЬ ОШИБКИ") << "\n\n";
 
     // Тест сортировки слиянием
-    cout << "\nТест сортировки слиянием\n";
-    copyArray(original, arr2, SIZE);
+    cout << "Тест сортировки слиянием:\n";
 
-    start = high_resolution_clock::now();
-    mergeSortWrapper(arr2, SIZE);
-    end = high_resolution_clock::now();
+    auto mergeStart = high_resolution_clock::now();
 
-    duration = duration_cast<microseconds>(end - start);
-    cout << "Время выполнения: " << duration.count() << " микросекунд ("
-        << duration.count() / 1000.0 << " мс)\n";
-    cout << "Проверка сортировки: " << (isSorted(arr2, SIZE) ? "OK" : "FAILED") << endl;
+    bool allSortedMerge = true;
+    for (int iter = 0; iter < ITERATIONS; iter++) {
+        // Генерация новых случайных данных для каждой итерации
+        generateRandomArray(original, SIZE, -1000, 1000);
+        copyArray(original, arr2, SIZE);
+
+        mergeSortWrapper(arr2, SIZE);
+
+        // Проверка сортировки для каждой итерации
+        if (!isSorted(arr2, SIZE)) {
+            allSortedMerge = false;
+            cout << "Ошибка сортировки на итерации " << iter + 1 << endl;
+        }
+    }
+
+    auto mergeEnd = high_resolution_clock::now();
+
+    auto mergeDuration = duration_cast<microseconds>(mergeEnd - mergeStart);
+    cout << "Общее время выполнения (" << ITERATIONS << " итераций): "
+        << mergeDuration.count() << " микросекунд ("
+        << mergeDuration.count() / 1000000.0 << " секунд)\n";
+    cout << "Среднее время на итерацию: "
+        << mergeDuration.count() / ITERATIONS << " микросекунд\n";
+    cout << "Проверка сортировки: " << (allSortedMerge ? "ВСЕ OK" : "ЕСТЬ ОШИБКИ") << endl;
 
     // Освобождение памяти
     delete[] original;
