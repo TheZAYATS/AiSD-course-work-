@@ -11,7 +11,7 @@ using namespace std::chrono;
 void quickSort(int* arr, int left, int right) {
     if (left >= right) return;
 
-    int pivot = arr[(left + right) / 2];
+    int pivot = arr[left + (right - left) / 2];
     int i = left;
     int j = right;
 
